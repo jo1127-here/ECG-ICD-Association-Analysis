@@ -1,7 +1,7 @@
 
 # ECG–ICD Association Analysis
 
-**Python Programming Portfolio | Yuxuan Zhou**
+**Python Programming Portfolio**
 
 This project investigates associations between electrocardiogram (ECG) T-wave characteristics and ICD-9 diagnoses using patient-level clinical data. It demonstrates an end-to-end analytical workflow, from data cleaning and feature engineering to statistical modeling, multiple-testing correction, and visualization.
 
