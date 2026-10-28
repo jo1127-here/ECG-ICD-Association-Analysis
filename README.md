@@ -139,12 +139,15 @@ Researchers wishing to reproduce the analysis must obtain their own authorized a
 
 ## 9. Limitations
 
-- The study is observational and cannot establish causality.
-- Diagnosis indicators do not necessarily establish the timing of diagnoses relative to ECG acquisition.
-- The analysis screens selected prevalent diagnoses and a prespecified target rather than all ICD codes.
-- Model diagnostics cannot eliminate all potential statistical limitations.
-- Upstream ECG waveform feature extraction is outside the scope of this repository.
+This study is an exploratory analysis of associations between ECG-derived T-wave peak amplitude and patient-level ICD-9 diagnosis history. Several limitations should be considered:
 
+1. Temporal alignment: ECG recordings capture short-term cardiac electrical activity, whereas ICD codes represent documented diagnosis history. Reliable temporal correspondence between ECG acquisition and diagnosis records was not established. Therefore, the analysis cannot determine whether a particular diagnosis was active at the time of ECG recording.
+
+2. Unmeasured confounding: The linear mixed-effects models include patient-specific random intercepts to account for repeated ECG observations but do not adjust for demographic or clinical covariates such as age, sex, medications, or comorbidities. The estimated associations may therefore be affected by residual confounding.
+
+3. Cohort selection: The analysis is restricted to patients with available ICD-9 records, which may introduce selection bias and limit generalizability to the broader ECG population.
+
+4. Exploratory interpretation: The 20 most prevalent ICD-9 codes were selected for association screening, with Benjamini–Hochberg false discovery rate correction applied across the tested diagnoses. Although several associations remained statistically significant after correction, these findings should not be interpreted as causal relationships or clinically validated biomarkers.
 ## Author
 
 **Yuxuan Zhou**
