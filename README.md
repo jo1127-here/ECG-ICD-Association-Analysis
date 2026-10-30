@@ -1,6 +1,5 @@
 # ECG–ICD Association Analysis
 
-**Python Programming Portfolio | Yuxuan Zhou**
 
 This project examines exploratory associations between ECG-derived **average T-wave peak amplitude** (`avg_t_peak_val`) and patient-level ICD-9 diagnosis history. The Python workflow integrates repeated ECG observations with diagnosis indicators, fits linear mixed-effects models, applies multiple-testing correction, and visualizes effect estimates.
 
