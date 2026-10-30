@@ -39,31 +39,54 @@ For ICD-9 **2449 (acquired hypothyroidism)**, an earlier run of this analysis re
 
 This association was nominally significant but **did not meet the BH-FDR q < 0.05 threshold**. These values are illustrative results from the prior analysis, not a fresh rerun of the public notebook.
 
-## Repository contents
+
+## Repository Contents
 
 ```text
 ECG-ICD-Association-Analysis/
 ├── README.md
-├── ECG_ICD_Analysis_Public.ipynb
-├── requirements.txt
-├── .gitignore
-└── figures/                       # Optional, reviewed aggregate figures only
-    └── top10_icd_forest.png
+├── ECG_ICD_Analysis_Public.py
+└── outputs/
+    ├── top10_icd_forest.png
+    └── icd_lmm_screening.csv
 ```
 
-The repository contains analysis code and documentation, **not** the clinical input files or patient-level outputs. An optional aggregate forest plot should be reviewed before publication.
+This repository contains the complete Python analysis pipeline, project documentation, and selected statistical outputs.
 
-## Running locally
+The `outputs/` directory includes:
 
-Obtain the required clinical data through authorized access and prepare the following project-specific CSV inputs (upstream preparation is not included):
+- **`top10_icd_forest.png`**: Forest plot showing the ten largest absolute standardized ICD-9 association estimates with 95% confidence intervals.
+- **`icd_lmm_screening.csv`**: Model-level screening results, including standardized coefficients, confidence intervals, p-values, BH-FDR-adjusted q-values, and model diagnostics.
+
+Raw clinical records, patient identifiers, and patient-level datasets are not publicly distributed. Aggregate outputs should be reviewed for compliance with PhysioNet data use requirements before publication.
+
+## Running Locally
+
+Reproducing the analysis requires authorized access to the relevant clinical datasets and preparation of the following project-specific CSV inputs:
 
 | Local file in `data/` | Purpose |
 |---|---|
-| `01_twave_features.csv` | ECG-derived T-wave features |
-| `icd_ecg_filtered.csv` | Patient-level diagnosis records linked to ECG cohort |
-| `d_icd_diagnoses.csv` | ICD-9 diagnosis labels |
+| `01_twave_features.csv` | ECG-derived T-wave peak amplitude measurements |
+| `icd_ecg_filtered.csv` | Patient-level ICD diagnosis records linked to the ECG cohort |
+| `d_icd_diagnoses.csv` | ICD-9 diagnosis descriptions |
 
-Install dependencies with `pip install -r requirements.txt`, then open `ECG_ICD_Analysis_Public.ipynb` and run its cells. The notebook reads from the local `data/` directory and writes model-level summaries to `icd_screening_results/`.
+Upstream data preprocessing is not included in this repository.
+
+Install the required Python libraries:
+
+```bash
+pip install numpy pandas matplotlib statsmodels
+```
+
+Configure the local input paths in `ECG_ICD_Analysis_Public.py`, then execute:
+
+```bash
+python ECG_ICD_Analysis_Public.py
+```
+
+The script performs data cleaning, ICD feature engineering, linear mixed-effects modeling, BH-FDR correction, and forest plot visualization. Model results are generated locally in `icd_screening_results/`.
+
+The `outputs/` directory contains selected results from a previous analysis run for portfolio review. Reproducing these results requires independently authorized access to the underlying PhysioNet data.
 
 **Do not commit** `data/`, `icd_screening_results/`, raw records, patient identifiers, or executed notebooks containing sensitive outputs. The public notebook has been cleared of execution results. Because the underlying data are restricted, an outside reader cannot run the notebook without their own authorized access and preparation of the required inputs.
 
