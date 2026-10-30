@@ -81,7 +81,3 @@ I developed the Python workflow for ECG–ICD integration, patient-level feature
 ## Data availability and responsible sharing
 
 Clinical source data are subject to PhysioNet credentialed-access requirements and applicable data use agreements. Patient-level data and derived matrices are intentionally excluded from this public repository. Access to underlying data must be obtained independently through [PhysioNet](https://physionet.org/).
-
-## Author
-
-**Yuxuan Zhou** — Graduate Application Programming Portfolio
