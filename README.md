@@ -1,155 +1,88 @@
-
 # ECG–ICD Association Analysis
 
-**Python Programming Portfolio**
+**Python Programming Portfolio | Yuxuan Zhou**
 
-This project investigates associations between electrocardiogram (ECG) T-wave characteristics and ICD-9 diagnoses using patient-level clinical data. It demonstrates an end-to-end analytical workflow, from data cleaning and feature engineering to statistical modeling, multiple-testing correction, and visualization.
+This project examines exploratory associations between ECG-derived **average T-wave peak amplitude** (`avg_t_peak_val`) and patient-level ICD-9 diagnosis history. The Python workflow integrates repeated ECG observations with diagnosis indicators, fits linear mixed-effects models, applies multiple-testing correction, and visualizes effect estimates.
 
-> **Data Availability:** This project uses clinical data accessed through PhysioNet under credentialed-access requirements. Raw data and patient-level processed datasets are not publicly distributed.
+> **Data access:** This analysis uses credentialed-access clinical data from PhysioNet. Neither raw records nor patient-level derived datasets are distributed in this repository.
 
-## 1. Research Objective
+## Research question
 
-The primary objective is to investigate whether ICD-9 diagnoses are associated with two ECG T-wave characteristics:
+Are common ICD-9 diagnoses associated with differences in standardized T-wave peak amplitude? Patients may contribute multiple ECG observations, so the analysis uses a patient-specific random intercept to account for within-patient correlation. The findings are **associations, not causal effects**.
 
-- Average T-wave peak amplitude (`avg_t_peak_val`)
-- T-wave duration (`t_duration`)
+## Workflow
 
-Because individual patients may contribute multiple ECG observations, Linear Mixed-Effects Models (LMMs) are used to account for within-patient correlation.
+1. **Validate and clean:** Check required columns, normalize `subject_id` and ICD codes, restrict to ICD-9, and convert invalid ECG measurements to missing values.
+2. **Define the cohort:** Retain ECG patients with available ICD-9 diagnosis records.
+3. **Engineer diagnosis features:** Select the 20 most prevalent ICD-9 codes in the matched cohort; deduplicate patient–diagnosis pairs; construct binary patient-level indicators and merge them onto ECG observations.
+4. **Fit mixed-effects models:** For each ICD code, fit a random-intercept linear mixed model with standardized T-wave peak amplitude as the outcome. Check minimum exposed/unexposed patient counts, convergence, model warnings, and coefficient validity.
+5. **Correct for multiple testing:** Apply Benjamini–Hochberg false discovery rate (BH-FDR) correction to the valid, non-warning-flagged models.
+6. **Visualize:** Display the 10 largest absolute standardized coefficients in a forest plot with 95% confidence intervals. Color indicates association direction; an asterisk indicates BH-FDR q < 0.05.
 
-The analysis focuses on statistical associations rather than causal inference.
-
-## 2. Technical Skills Demonstrated
-
-### Data Processing and Cleaning
-- Loaded and validated clinical CSV datasets using pandas.
-- Standardized patient identifiers and ICD-9 diagnosis codes.
-- Converted invalid measurements to missing values.
-- Removed duplicate patient-diagnosis combinations.
-- Handled missing values and validated dataset joins.
-
-### Feature Engineering
-- Identified the 20 most prevalent ICD-9 diagnoses.
-- Retained ICD-9 code 2449 as a prespecified target.
-- Converted long-format diagnosis records into patient-level binary indicators using pivot tables.
-- Merged diagnosis features with repeated ECG observations.
-
-### Statistical Modeling
-- Developed a reusable Python function for fitting LMMs.
-- Standardized ECG outcomes before model fitting.
-- Included patient-specific random intercepts.
-- Implemented convergence checks and model diagnostics.
-- Extracted standardized coefficients, standard errors, confidence intervals, and p-values.
-
-### Multiple-Testing Correction
-- Applied Benjamini–Hochberg FDR correction separately to each ECG outcome.
-- Distinguished nominal significance from FDR-adjusted significance.
-
-### Visualization
-- Selected the ten largest absolute standardized coefficients among models without flagged diagnostic warnings.
-- Created a forest plot with 95% confidence intervals.
-- Distinguished positive and negative associations using color.
-- Marked associations passing the FDR significance threshold.
-
-## 3. Statistical Framework
-
-For each ICD-9 diagnosis and ECG outcome, the following random-intercept model was fitted:
+### Statistical model
 
 ```text
-Standardized ECG Outcome ~ ICD Indicator + (1 | Patient ID)
+standardized(avg_t_peak_val) ~ ICD_indicator + (1 | subject_id)
 ```
 
-The ICD indicator is defined at the patient level, while the random intercept accounts for repeated ECG observations within patients.
+The ICD indicator describes whether a diagnosis appears in a patient's recorded ICD-9 history. It does not establish whether the diagnosis was active at the time of an ECG.
 
-The resulting coefficient describes a standardized association between the diagnosis indicator and the ECG measurement.
+## Illustrative result
 
-## 4. Example Finding
+For ICD-9 **2449 (acquired hypothyroidism)**, an earlier run of this analysis reported:
 
-For ICD-9 code 2449 (Acquired Hypothyroidism), the model estimated a positive association with standardized T-wave peak amplitude.
-
-| Statistic | Estimate |
+| Measure | Estimate |
 |---|---:|
-| Standardized coefficient | 0.2401 |
+| Standardized coefficient | +0.2401 |
 | 95% confidence interval | [0.0065, 0.4736] |
 | Unadjusted p-value | 0.04397 |
-| BH-FDR adjusted q-value | 0.08794 |
+| BH-FDR q-value | 0.08794 |
 
-Although the association reached nominal statistical significance, it did not remain significant after BH-FDR correction at the 0.05 threshold.
+This association was nominally significant but **did not meet the BH-FDR q < 0.05 threshold**. These values are illustrative results from the prior analysis, not a fresh rerun of the public notebook.
 
-This example illustrates why multiple-testing correction is important when screening numerous clinical associations.
-
-## 5. Repository Structure
+## Repository contents
 
 ```text
-ECG-ICD-Association/
+ECG-ICD-Association-Analysis/
 ├── README.md
-├── ECG_ICD_Analysis.ipynb
+├── ECG_ICD_Analysis_Public.ipynb
 ├── requirements.txt
 ├── .gitignore
-└── figures/
+└── figures/                       # Optional, reviewed aggregate figures only
     └── top10_icd_forest.png
 ```
 
-The `figures/` directory is optional and should contain only aggregate visualizations approved for public sharing.
+The repository contains analysis code and documentation, **not** the clinical input files or patient-level outputs. An optional aggregate forest plot should be reviewed before publication.
 
-## 6. Data Requirements
+## Running locally
 
-The analysis requires three input files:
+Obtain the required clinical data through authorized access and prepare the following project-specific CSV inputs (upstream preparation is not included):
 
-| File | Description |
+| Local file in `data/` | Purpose |
 |---|---|
-| 01_twave_features.csv | ECG-derived T-wave measurements |
-| icd_ecg_filtered.csv | Patient diagnosis records |
-| d_icd_diagnoses.csv | ICD-9 diagnosis descriptions |
+| `01_twave_features.csv` | ECG-derived T-wave features |
+| `icd_ecg_filtered.csv` | Patient-level diagnosis records linked to ECG cohort |
+| `d_icd_diagnoses.csv` | ICD-9 diagnosis labels |
 
-The first two are project-specific analysis inputs. Their upstream preprocessing is not included in this repository.
+Install dependencies with `pip install -r requirements.txt`, then open `ECG_ICD_Analysis_Public.ipynb` and run its cells. The notebook reads from the local `data/` directory and writes model-level summaries to `icd_screening_results/`.
 
-The input data must be placed in a local `data/` directory and must not be committed to GitHub.
+**Do not commit** `data/`, `icd_screening_results/`, raw records, patient identifiers, or executed notebooks containing sensitive outputs. The public notebook has been cleared of execution results. Because the underlying data are restricted, an outside reader cannot run the notebook without their own authorized access and preparation of the required inputs.
 
-## 7. Reproducing the Analysis
+## Limitations
 
-1. Obtain authorized access to the relevant PhysioNet clinical datasets.
-2. Prepare the three required input files.
-3. Place them in the local `data/` directory.
-4. Install the required Python libraries:
+- **Temporal alignment:** Diagnosis history is not reliably aligned with each ECG acquisition; the analysis cannot establish whether a diagnosis was active at recording time.
+- **Confounding:** The models do not adjust for age, sex, medications, or comorbidities. A patient random intercept accounts for repeated observations but does not remove these confounders.
+- **Selection:** The cohort includes only ECG patients with ICD-9 records, potentially limiting generalizability.
+- **Exploratory screening:** The 20 most prevalent diagnoses are screened, with BH-FDR applied to valid models. Associations should not be interpreted as causal or clinically validated biomarkers.
 
-```bash
-pip install -r requirements.txt
-```
+## My contributions
 
-5. Open `ECG_ICD_Analysis.ipynb` in Jupyter Notebook or VS Code.
-6. Run the cells sequentially.
+I developed the Python workflow for ECG–ICD integration, patient-level feature engineering, mixed-effects modeling, model diagnostics, BH-FDR correction, and forest plot visualization.
 
-Generated results are stored locally in `icd_screening_results/`.
+## Data availability and responsible sharing
 
-## 8. Data Privacy and Responsible Sharing
+Clinical source data are subject to PhysioNet credentialed-access requirements and applicable data use agreements. Patient-level data and derived matrices are intentionally excluded from this public repository. Access to underlying data must be obtained independently through [PhysioNet](https://physionet.org/).
 
-The underlying clinical data are subject to PhysioNet credentialed-access requirements and applicable data use agreements.
-
-To comply with these restrictions, this repository does not contain:
-
-- Raw ECG or clinical records
-- Patient-level diagnosis matrices
-- Patient identifiers
-- Restricted intermediate datasets
-- Notebook outputs containing patient-level information
-
-Only analysis code, documentation, and appropriately reviewed aggregate outputs may be publicly shared.
-
-Researchers wishing to reproduce the analysis must obtain their own authorized access through [PhysioNet](https://physionet.org/).
-
-## 9. Limitations
-
-This study is an exploratory analysis of associations between ECG-derived T-wave peak amplitude and patient-level ICD-9 diagnosis history. Several limitations should be considered:
-
-1. Temporal alignment: ECG recordings capture short-term cardiac electrical activity, whereas ICD codes represent documented diagnosis history. Reliable temporal correspondence between ECG acquisition and diagnosis records was not established. Therefore, the analysis cannot determine whether a particular diagnosis was active at the time of ECG recording.
-
-2. Unmeasured confounding: The linear mixed-effects models include patient-specific random intercepts to account for repeated ECG observations but do not adjust for demographic or clinical covariates such as age, sex, medications, or comorbidities. The estimated associations may therefore be affected by residual confounding.
-
-3. Cohort selection: The analysis is restricted to patients with available ICD-9 records, which may introduce selection bias and limit generalizability to the broader ECG population.
-
-4. Exploratory interpretation: The 20 most prevalent ICD-9 codes were selected for association screening, with Benjamini–Hochberg false discovery rate correction applied across the tested diagnoses. Although several associations remained statistically significant after correction, these findings should not be interpreted as causal relationships or clinically validated biomarkers.
 ## Author
 
-**Yuxuan Zhou**
-
-Python Programming Portfolio — Graduate Application
+**Yuxuan Zhou** — Graduate Application Programming Portfolio
